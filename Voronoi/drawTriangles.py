@@ -778,10 +778,10 @@ if __name__ == '__main__':
                 triangles = delaunayFromPoints(points)
                 polygons = voronoiFromTriangles(triangles)
 
-                voronoi_filename = addFilenamePrefix("voronoi_", options.output_filename)
+                voronoi_filename = addFilenamePrefix("voronoi_", options.output_filename)+ ".jpg"
                 drawImageColoredVoronoi(polygons, voronoi_filename, colorIm, multiplier=1)
 
-                vmasks_filename_prefix = addFilenamePrefix("vmasks_", options.output_filename)
+                vmasks_filename_prefix = addFilenamePrefix("vmasks_", options.output_filename)+ ".jpg"
                 drawVMasksImagesFromVoronoi(polygons, colorIm, vmasks_filename_prefix)
                 key1_path = vmasks_filename_prefix + "_key1.jpg"
                 key2_path = vmasks_filename_prefix + "_key2.jpg"
@@ -808,9 +808,9 @@ if __name__ == '__main__':
                     # 用优化后的点再次生成
                     triangles = delaunayFromPoints(optimized_points)
                     polygons = voronoiFromTriangles(triangles)
-                    voronoi_filename = addFilenamePrefix("voronoi_optimized_", options.output_filename)
+                    voronoi_filename = addFilenamePrefix("voronoi_optimized_", options.output_filename)+ ".jpg"
                     drawImageColoredVoronoi(polygons, voronoi_filename, colorIm, multiplier=1)
-                    vmasks_filename_prefix = addFilenamePrefix("vmasks_optimized_", options.output_filename)
+                    vmasks_filename_prefix = addFilenamePrefix("vmasks_optimized_", options.output_filename)+ ".jpg"
                     drawVMasksImagesFromVoronoi(polygons, colorIm, vmasks_filename_prefix)
                     key1_path = vmasks_filename_prefix + "_key1.jpg"
                     key2_path = vmasks_filename_prefix + "_key2.jpg"
