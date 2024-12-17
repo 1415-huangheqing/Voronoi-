@@ -364,13 +364,12 @@ def point_in_polygon(x, y, polygon):
 
 def brightenImage(im, factor):
     # 简单提高亮度的函数，factor>1越亮
-    # 可以使用PIL的ImageEnhance模块，这里是示意
+    # 使用PIL的ImageEnhance模块
     # from PIL import ImageEnhance
     # enhancer = ImageEnhance.Brightness(im)
     # im_bright = enhancer.enhance(factor)
     # return im_bright
     
-    # 如果不想使用ImageEnhance，可手动调整像素亮度：
     arr = np.array(im, dtype=np.float32)
     arr = arr * factor
     arr = np.clip(arr, 0, 255).astype(np.uint8)
@@ -380,7 +379,6 @@ def polygon_gravity_center(pol):
     # 使用多边形重心公式（多边形为非自交）
     # 如果是简单多边形，可以用顶点平均值近似
     # 这里使用公式求质心
-    # 参考：https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
     area = 0.0
     cx = 0.0
     cy = 0.0
@@ -394,7 +392,6 @@ def polygon_gravity_center(pol):
         cy += (y1 + y2) * cross
     area = area / 2.0
     if area == 0:
-        # 如果面积为0(几乎不可能，但防止除零错误)，用平均值代替
         xs = [p[0] for p in pol]
         ys = [p[1] for p in pol]
         return (sum(xs)/len(xs), sum(ys)/len(ys))
@@ -499,7 +496,6 @@ def drawVMasksImagesFromVoronoi(polygons, origIm, filename_prefix):
     # 本函数在已经有了Voronoi的polygons后调用
     start = time.perf_counter()
     (sizeX, sizeY) = origIm.size
-    #  # 首先将origIm也放大到与Voronoi相同大小，以便坐标对应---------------------------
     # origImScaled = origIm.resize((sizeX*multiplier, sizeY*multiplier), Image.BICUBIC)
     #  # 创建与Voronoi同尺寸的Key Images
     # im_key1 = Image.new('RGB', (sizeX*multiplier, sizeY*multiplier), color=(255,255,255))
@@ -541,7 +537,7 @@ def drawVMasksImagesFromVoronoi(polygons, origIm, filename_prefix):
         fillPolygonWithVmask(pol, im_key1, gx, key1_mask_type)
         fillPolygonWithVmask(pol, im_key2, gx, key2_mask_type)
 
-    # 可按需要调亮图像（非必须）
+
     im_key1 = brightenImage(im_key1, 3.0)
     im_key2 = brightenImage(im_key2, 3.0)
 
@@ -670,11 +666,9 @@ def construct_alpha_shape(points, alpha):
     return alpha_edges
 
 def is_shape_good_enough(alpha_edges, im):
-    # 简单判定：如果边数量大于10就算够好（示例）
     return len(alpha_edges) > 10
 
 def adjust_points_based_on_alpha_shape(alpha_edges, points):
-    # 简单返回原点集（示例）
     return points
 
 def alpha_shape_optimization(points, alpha_start, im, max_iter=5):
@@ -727,7 +721,7 @@ if __name__ == '__main__':
     # 新增参数
     parser.add_argument('-hold','--threshold', dest='threshold', type=float, default=0.5, help='Allowed difference threshold (e.g. 0.5 means no more than 50% pixel difference).')
     parser.add_argument('-max','--max-iter', dest='max_iter', type=int, default=10, help='Max iteration if difference ratio is too large.')
-    # 这两行代码来定义epsilon和alpha参数
+    # 定义epsilon和alpha参数
     parser.add_argument('-e','--epsilon', type=float, default=5.0, help='Epsilon for epsilon-sampling')
     parser.add_argument('-a','--alpha', type=float, default=10.0, help='Initial alpha for alpha-shape')
 
@@ -762,8 +756,8 @@ if __name__ == '__main__':
         #     overlay_output_path = vmasks_filename_prefix + "_overlay_result.jpg"
         #     overlay_vmask_images(key1_path, key2_path, overlay_output_path)
 
-        # 我们在这里增加一个循环来尝试多次生成，直到满足threshold条件或超过max_iter
-        # 按照正常尝试（增加factor） -> 不满足要求 -> 用ε-采样保证覆盖 -> 用α-形状迭代优化 -> 再比较这样的逻辑。
+        # 增加一个循环来尝试多次生成，直到满足threshold条件或超过max_iter
+        # 逻辑：按照正常尝试（增加factor） -> 不满足要求 -> 用ε-采样保证覆盖 -> 用α-形状迭代优化 -> 再比较。
             current_factor = options.factor
             iteration = 0
             #第三次加了这里：
@@ -789,7 +783,7 @@ if __name__ == '__main__':
                 overlay_vmask_images(key1_path, key2_path, overlay_output_path)
 
                 # 计算差异 (与Voronoi图比较，也可与原图比较，视需求而定)
-                # 如果你想与原始输入图比较，则使用options.input_filename代替voronoi_filename即可
+                # 如果与原始输入图比较，则使用options.input_filename代替voronoi_filename即可
                 diff_ratio = calculate_difference_ratio(options.input_filename, voronoi_filename)
                 print(f"Difference ratio: {diff_ratio:.4f}")
 
@@ -805,7 +799,6 @@ if __name__ == '__main__':
                     print("Not satisfied. Trying epsilon_sampling + alpha_shape_optimization.")
                     eps_points = epsilon_sampling(blackIm, options.epsilon)
                     optimized_points = alpha_shape_optimization(eps_points, options.alpha, blackIm)
-                    # 用优化后的点再次生成
                     triangles = delaunayFromPoints(optimized_points)
                     polygons = voronoiFromTriangles(triangles)
                     voronoi_filename = addFilenamePrefix("voronoi_optimized_", options.output_filename)+ ".jpg"
